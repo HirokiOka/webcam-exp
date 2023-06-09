@@ -3,7 +3,7 @@
 void ofApp::setup(){
   ofSetVerticalSync(true);
 
-  //init GUI
+  //Init GUI
   gui.setup();
   gui.add(threshold.setup("threshold", 40, 10, 255));
   gui.add(moveThreshold.setup("move threshold", 30, 0, 100));
@@ -11,7 +11,7 @@ void ofApp::setup(){
   gui.add(showImg.setup("show image", 20, 20));
   gui.add(pixSize.setup("pixSize", 8, 1, 20));
 
-  //init VideoGrabber
+  //Init VideoGrabber
   vidGrabber.setDeviceID(1);
   vidGrabber.setup(camWidth, camHeight, true);
 
@@ -36,7 +36,7 @@ void ofApp::setup(){
   particleSystem.setMaxParticles(maxParticles);
   particleSystem.setRadius(particleRadius);
 
-  for(int i = 0; i < maxParticles; i++) {
+  for(size_t i = 0; i < maxParticles; i++) {
     particleSystem.addParticle(int(colorImg.width / 4) + ofRandom(-20, 20), ofRandom(-50, 50));
   }
   particleSystem.setParticleType(12);
@@ -103,7 +103,7 @@ void ofApp::update(){
   float dt = 1.0 / max(ofGetFrameRate(), 1.f);
   eTimef = ofGetElapsedTimef();
 
-  //scene change
+  //Scene change
   int cond = (int)eTimef % (dSec * sceneNum);
   if (cond < dSec) {
     scene = 0;
@@ -134,14 +134,14 @@ void ofApp::update(){
     grayDiff.threshold(threshold);
     contourFinder.findContours(grayDiff, 20, (colorImg.width*colorImg.height)/ 3, 10, false);
 
-    for (int i = 0; i < contourCircles.size(); i++) {
+    for (size_t i = 0; i < contourCircles.size(); i++) {
       contourCircles[i]->destroy();
     }
 
     contourCircles.clear();
     edgeLines.clear();
-    for (int i = 0; i < contourFinder.nBlobs; i++) {
-      for (int j = 0; j < contourFinder.blobs[i].pts.size(); j+=4) {
+    for (size_t i = 0; i < contourFinder.nBlobs; i++) {
+      for (size_t j = 0; j < contourFinder.blobs[i].pts.size(); j+=4) {
         glm::vec2 pos = contourFinder.blobs[i].pts[j];
         auto circle = make_shared<ofxBox2dCircle>();
         circle->setup(box2d.getWorld(), pos.x, pos.y, 4);
@@ -155,9 +155,9 @@ void ofApp::update(){
     opticalFlow.setInput(cameraFbo.getTexture());
   }
 
-  for(int i = 0; i< contourFinder.nBlobs; i++){
+  for(size_t i = 0; i< contourFinder.nBlobs; i++){
     ofPolyline line;
-    for(int j =0; j<contourFinder.blobs[i].pts.size(); j++){
+    for(size_t j =0; j<contourFinder.blobs[i].pts.size(); j++){
       line.addVertex(contourFinder.blobs[i].pts[j]);
     }
     edgeLines.push_back(line);
@@ -181,9 +181,9 @@ void ofApp::update(){
 
   float dSum = 0;
   int totalVertices = 0;
-  for(int i = 0; i < edgeLines.size(); i++) {
+  for(size_t i = 0; i < edgeLines.size(); i++) {
     totalVertices += edgeLines[i].getVertices().size();
-    for (int j = 0; j < edgeLines[i].getVertices().size(); j++) {
+    for (size_t j = 0; j < edgeLines[i].getVertices().size(); j++) {
       float x = edgeLines[i].getVertices()[j].x;
       float y = edgeLines[i].getVertices()[j].y;
       float dist = sqrt(x * x + y * y);
@@ -223,42 +223,46 @@ void ofApp::draw(){
   if (scene == 0) {
     particleSystem.updateMesh();
     ofPushStyle();
+
     ofColor sCol = ofColor(0);
+    //ofColor sCol = ofColor(250, 156, 184);
     sCol.setHsb(hue, 255, 255);
     ofSetColor(sCol);
+
     particleSystem.draw();
+
     ofColor hCol = ofColor(0);
     hCol.setHsb(abs(int(hue) - 100) % 255, 255, 255);
     ofSetColor(hCol);
     ofSetLineWidth(4.0);
-    for(int i = 0; i < edgeLines.size(); i++) edgeLines[i].draw();
+    for(size_t i = 0; i < edgeLines.size(); i++) edgeLines[i].draw();
     ofPopStyle();
     /*
     contourFinder.draw();
     for (size_t i=0; i<contourCircles.size(); i++) contourCircles[i]->draw();
+    ofPopMatrix();
     */
-    //ofPopMatrix();
 
   } else if (scene == 1) {
-
-    ofPushStyle();
-    fluidFlow.draw(0, 0, cropW, camHeight);
-    ofPopStyle();
-  } else if (scene == 2) {
     //ofClear(0, 0);
     ofPushStyle();
     //ofEnableBlendMode(OF_BLENDMODE_ADD);
-    //cameraFbo.draw(0, 0, windowWidth, windowHeight);
-    //fluidFlow.draw(0, 0, cropW, camHeight);
-    //fluidFlow.drawPressure(0, 0, cropW, camHeight);
+    cameraFbo.draw(0, 0, windowWidth, windowHeight);
+    fluidFlow.draw(0, 0, cropW, camHeight);
+    fluidFlow.drawPressure(0, 0, cropW, camHeight);
     fluidFlow.drawVelocity(0, 0, cropW, camHeight);
     //for(int i = 0; i < edgeLines.size(); i++) edgeLines[i].draw();
+    ofPopStyle();
+
+  } else if (scene == 2) {
+    ofPushStyle();
+    fluidFlow.draw(0, 0, cropW, camHeight);
     ofPopStyle();
   } else if (scene == 3) {
     float tFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     ofPixels pixels = colorImg.getPixels();
-    for (int j = 0; j < camHeight; j+=pixSize) {
-      for (int i = 0; i < cropW; i+=pixSize) {
+    for (size_t j = 0; j < camHeight; j+=pixSize) {
+      for (size_t i = 0; i < cropW; i+=pixSize) {
         unsigned char r = pixels[(j * cropW + i) * 3];
         unsigned char g = pixels[(j * cropW + i) * 3 + 1];
         unsigned char b = pixels[(j * cropW + i) * 3 + 2];
