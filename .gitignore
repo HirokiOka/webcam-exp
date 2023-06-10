@@ -2,3 +2,4 @@
 Project.xcconfig
 compile_commands.json
 config.make
+Makefile
