@@ -12,7 +12,7 @@ void ofApp::setup(){
   gui.add(pixSize.setup("pixSize", 8, 1, 20));
 
   //Init VideoGrabber
-  vidGrabber.setDeviceID(1);
+  vidGrabber.setDeviceID(0);
   vidGrabber.setup(camWidth, camHeight, true);
 
   colorImg.allocate(camWidth ,camHeight);
