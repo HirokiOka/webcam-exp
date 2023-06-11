@@ -26,6 +26,7 @@ class ofApp : public ofBaseApp{
     ParticleSystem particleSystem;
 
     ofVideoGrabber vidGrabber;
+    vector<ofVideoDevice> devices;
     ofxCvColorImage colorImg;
     ofxCvGrayscaleImage grayImg;
     ofxCvGrayscaleImage grayBg;

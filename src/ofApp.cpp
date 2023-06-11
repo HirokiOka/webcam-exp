@@ -12,6 +12,14 @@ void ofApp::setup(){
   gui.add(pixSize.setup("pixSize", 8, 1, 20));
 
   //Init VideoGrabber
+  devices = vidGrabber.listDevices();
+  for (int i = 0; i < devices.size(); i++) {
+    if (devices[i].bAvailable) {
+      ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
+    } else {
+      ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable";
+    }
+  }
   vidGrabber.setDeviceID(0);
   vidGrabber.setup(camWidth, camHeight, true);
 
