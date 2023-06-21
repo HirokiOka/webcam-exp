@@ -263,26 +263,32 @@ void ofApp::draw(){
     ofPopStyle();
 
   } else if (scene == 2) {
-    ofPushStyle();
-    fluidFlow.draw(0, 0, cropW, camHeight);
-    ofPopStyle();
-  } else if (scene == 3) {
-    float tFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
+    float cFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     ofPixels pixels = colorImg.getPixels();
     for (size_t j = 0; j < camHeight; j+=pixSize) {
       for (size_t i = 0; i < cropW; i+=pixSize) {
+        float tFac = abs(tan(ofGetElapsedTimef() * (i + j) * 0.002));
         unsigned char r = pixels[(j * cropW + i) * 3];
         unsigned char g = pixels[(j * cropW + i) * 3 + 1];
         unsigned char b = pixels[(j * cropW + i) * 3 + 2];
+
         ofPushStyle();
-        float hue3 = (r + g + b) / 3.0 * tFac;
+        float hue3 = (r + g + b) / 3.0 * cFac;
         ofColor rCol = ofColor(0);
-        rCol.setHsb(hue3, 200, 255);
+        rCol.setHsb(hue3, hue3, 255);
         ofSetColor(rCol);
-        ofDrawRectangle(i, j, pixSize, pixSize);
+        if (rCol.r == 0) {
+          ofSetColor(r, g, b);
+        }
+        ofDrawRectangle(i, j, pixSize*tFac, pixSize*tFac);
         ofPopStyle();
+
       }
     }
+  } else if (scene == 3) {
+    ofPushStyle();
+    fluidFlow.draw(0, 0, cropW, camHeight);
+    ofPopStyle();
   }
   ofPopMatrix();
 
