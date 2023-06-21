@@ -54,7 +54,7 @@ class ofApp : public ofBaseApp{
     //int cropW = 270;  //if camWidth is 320, 135
     int cropW = 270;
 
-    int maxParticles = 15000;
+    int maxParticles = 45000;
     int particleRadius = 2;
 
     int intervalSec = 30;

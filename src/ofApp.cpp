@@ -45,7 +45,7 @@ void ofApp::setup(){
   particleSystem.setRadius(particleRadius);
 
   for(size_t i = 0; i < maxParticles; i++) {
-    particleSystem.addParticle(int(colorImg.width / 4) + ofRandom(-20, 20), ofRandom(-50, 50));
+    particleSystem.addParticle(int(colorImg.width / 2) + ofRandom(-200, 200), ofRandom(-50, 150));
   }
   particleSystem.setParticleType(12);
 
@@ -243,7 +243,7 @@ void ofApp::draw(){
     hCol.setHsb(abs(int(hue) - 100) % 255, 255, 255);
     ofSetColor(hCol);
     ofSetLineWidth(4.0);
-    for(size_t i = 0; i < edgeLines.size(); i++) edgeLines[i].draw();
+    //for(size_t i = 0; i < edgeLines.size(); i++) edgeLines[i].draw();
     ofPopStyle();
     /*
     contourFinder.draw();
