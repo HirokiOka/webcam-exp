@@ -9,7 +9,7 @@ void ofApp::setup(){
   gui.add(moveThreshold.setup("move threshold", 30, 0, 100));
   gui.add(bgCol.setup("background", 0, 0, 255));
   gui.add(showImg.setup("show image", 20, 20));
-  gui.add(pixSize.setup("pixSize", 8, 1, 20));
+  gui.add(pixSize.setup("pixSize", 16, 1, 32));
 
   //Init VideoGrabber
   devices = vidGrabber.listDevices();
@@ -24,9 +24,9 @@ void ofApp::setup(){
   vidGrabber.setup(camWidth, camHeight, true);
 
   colorImg.allocate(camWidth ,camHeight);
-  grayImg.allocate(cropW, camHeight);
-  grayBg.allocate(cropW, camHeight);
-  grayDiff.allocate(cropW, camHeight);
+  grayImg.allocate(camWidth, camHeight);
+  grayBg.allocate(camWidth, camHeight);
+  grayDiff.allocate(camWidth, camHeight);
 
   renderImg.allocate(camWidth, camHeight, OF_IMAGE_COLOR);
   bLearnBackground = true;
@@ -35,7 +35,7 @@ void ofApp::setup(){
   box2d.init();
   box2d.setGravity(0, 0);
   box2d.enableEvents();
-  box2d.createBounds(0, 0, cropW, colorImg.height);
+  box2d.createBounds(0, 0, colorImg.width, colorImg.height);
   box2d.setFPS(30);
   box2d.checkBounds(true);
 
@@ -102,7 +102,7 @@ void ofApp::setup(){
     flow->setVisualizationToggleScalar(true);
   }
 
-  cameraFbo.allocate(cropW, camHeight);
+  cameraFbo.allocate(camWidth, camHeight);
   ftUtil::zero(cameraFbo);
 }
 
@@ -129,7 +129,7 @@ void ofApp::update(){
   if (vidGrabber.isFrameNew()) {
     renderImg.setFromPixels(vidGrabber.getPixels());
     renderImg.mirror(false, true);
-    renderImg.crop(camWidth/2-cropW/2, 0, cropW, camHeight);
+    //renderImg.crop(camWidth/2-cropW/2, 0, cropW, camHeight);
     colorImg.setFromPixels(renderImg.getPixels());
     grayImg = colorImg;
 
@@ -256,9 +256,9 @@ void ofApp::draw(){
     ofPushStyle();
     //ofEnableBlendMode(OF_BLENDMODE_ADD);
     cameraFbo.draw(0, 0, windowWidth, windowHeight);
-    fluidFlow.draw(0, 0, cropW, camHeight);
-    fluidFlow.drawPressure(0, 0, cropW, camHeight);
-    fluidFlow.drawVelocity(0, 0, cropW, camHeight);
+    fluidFlow.draw(0, 0, camWidth, camHeight);
+    fluidFlow.drawPressure(0, 0, camWidth, camHeight);
+    fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
     //for(int i = 0; i < edgeLines.size(); i++) edgeLines[i].draw();
     ofPopStyle();
 
@@ -266,11 +266,11 @@ void ofApp::draw(){
     float cFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     ofPixels pixels = colorImg.getPixels();
     for (size_t j = 0; j < camHeight; j+=pixSize) {
-      for (size_t i = 0; i < cropW; i+=pixSize) {
+      for (size_t i = 0; i < camWidth; i+=pixSize) {
         float tFac = abs(tan(ofGetElapsedTimef() * (i + j) * 0.002));
-        unsigned char r = pixels[(j * cropW + i) * 3];
-        unsigned char g = pixels[(j * cropW + i) * 3 + 1];
-        unsigned char b = pixels[(j * cropW + i) * 3 + 2];
+        unsigned char r = pixels[(j * camWidth + i) * 3];
+        unsigned char g = pixels[(j * camWidth + i) * 3 + 1];
+        unsigned char b = pixels[(j * camWidth + i) * 3 + 2];
 
         ofPushStyle();
         float hue3 = (r + g + b) / 3.0 * cFac;
@@ -287,7 +287,7 @@ void ofApp::draw(){
     }
   } else if (scene == 3) {
     ofPushStyle();
-    fluidFlow.draw(0, 0, cropW, camHeight);
+    fluidFlow.draw(0, 0, camWidth, camHeight);
     ofPopStyle();
   }
   ofPopMatrix();
