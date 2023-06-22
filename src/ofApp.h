@@ -42,22 +42,23 @@ class ofApp : public ofBaseApp{
     ofxFloatSlider threshold;
     ofxFloatSlider moveThreshold;
     ofxFloatSlider bgCol;
-    ofxIntSlider pixSize;
+    ofxIntSlider camId;
+    //ofxIntSlider pixSize;
+    float pixSize = 16;
     ofxPanel gui;
     ofxButton showImg;
+
+    void paramChangedEvent(ofAbstractParameter &e);
 
     vector		<shared_ptr<ofxBox2dCircle> >	circles;
     vector <ofPolyline> edgeLines;
 
     int camWidth = 640;
     int camHeight = 480;
-    //int cropW = 270;  //if camWidth is 320, 135
-    int cropW = 270;
 
-    int maxParticles = 45000;
+    int maxParticles = 40000;
     int particleRadius = 2;
 
-    int intervalSec = 30;
 
     //sound
     ofSoundPlayer bgm;
@@ -81,7 +82,7 @@ class ofApp : public ofBaseApp{
     int windowWidth, windowHeight, densityWidth, densityHeight, simulationWidth, simulationHeight;
     int sceneNum = 4;
     int scene = 0;
-    int dSec = 30;
+    int dSec = 10;
     int momentum = 0;
     int lastMomentum = 0;
     int momDiff = 0;
