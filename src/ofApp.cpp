@@ -9,7 +9,7 @@ void ofApp::setup(){
   gui.add(moveThreshold.setup("move threshold", 30, 0, 100));
   gui.add(bgCol.setup("background", 0, 0, 255));
   gui.add(showImg.setup("show image", 20, 20));
-  gui.add(pixSize.setup("pixSize", 16, 1, 32));
+  gui.add(pixSize.setup("pixSize", 14, 4, 108));
 
   //Init VideoGrabber
   devices = vidGrabber.listDevices();
@@ -84,7 +84,7 @@ void ofApp::setup(){
 	temperatureBridgeFlow.setup(simulationWidth, simulationHeight);
 
 	fluidFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
-  fluidFlow.setSpeed(0.05);
+  fluidFlow.setSpeed(0.02);
   fluidFlow.setDissipationVel(0.1);
   fluidFlow.setDissipationDen(0.1);
   fluidFlow.setVorticity(1.0);
@@ -129,7 +129,6 @@ void ofApp::update(){
   if (vidGrabber.isFrameNew()) {
     renderImg.setFromPixels(vidGrabber.getPixels());
     renderImg.mirror(false, true);
-    //renderImg.crop(camWidth/2-cropW/2, 0, cropW, camHeight);
     colorImg.setFromPixels(renderImg.getPixels());
     grayImg = colorImg;
 
@@ -141,7 +140,6 @@ void ofApp::update(){
     grayDiff.absDiff(grayBg, grayImg);
     grayDiff.threshold(threshold);
     contourFinder.findContours(grayDiff, 20, (colorImg.width*colorImg.height)/ 3, 10, false);
-
     for (size_t i = 0; i < contourCircles.size(); i++) {
       contourCircles[i]->destroy();
     }
@@ -156,16 +154,18 @@ void ofApp::update(){
         contourCircles.push_back(circle);
       }
     }
+
     cameraFbo.begin();
     //vidGrabber.draw(cameraFbo.getWidth(), 0, -cameraFbo.getWidth(), cameraFbo.getHeight());
     renderImg.draw(0, 0);
     cameraFbo.end();
+
     opticalFlow.setInput(cameraFbo.getTexture());
   }
 
-  for(size_t i = 0; i< contourFinder.nBlobs; i++){
+  for(size_t i = 0; i< contourFinder.nBlobs; i+=2){
     ofPolyline line;
-    for(size_t j =0; j<contourFinder.blobs[i].pts.size(); j++){
+    for(size_t j =0; j<contourFinder.blobs[i].pts.size(); j+=2){
       line.addVertex(contourFinder.blobs[i].pts[j]);
     }
     edgeLines.push_back(line);
@@ -188,7 +188,7 @@ void ofApp::update(){
   fluidFlow.update(dt);
 
   float dSum = 0;
-  int totalVertices = 0;
+  int totalVertices = 1;
   for(size_t i = 0; i < edgeLines.size(); i++) {
     totalVertices += edgeLines[i].getVertices().size();
     for (size_t j = 0; j < edgeLines[i].getVertices().size(); j++) {
@@ -233,7 +233,6 @@ void ofApp::draw(){
     ofPushStyle();
 
     ofColor sCol = ofColor(0);
-    //ofColor sCol = ofColor(250, 156, 184);
     sCol.setHsb(hue, 255, 255);
     ofSetColor(sCol);
 
@@ -255,7 +254,8 @@ void ofApp::draw(){
     //ofClear(0, 0);
     ofPushStyle();
     //ofEnableBlendMode(OF_BLENDMODE_ADD);
-    cameraFbo.draw(0, 0, windowWidth, windowHeight);
+    //cameraFbo.draw(0, 0, windowWidth, windowHeight);
+    cameraFbo.draw(0, 0, camWidth, camHeight);
     fluidFlow.draw(0, 0, camWidth, camHeight);
     fluidFlow.drawPressure(0, 0, camWidth, camHeight);
     fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
@@ -263,8 +263,8 @@ void ofApp::draw(){
     ofPopStyle();
 
   } else if (scene == 2) {
-    float cFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     ofPixels pixels = colorImg.getPixels();
+    float cFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     for (size_t j = 0; j < camHeight; j+=pixSize) {
       for (size_t i = 0; i < camWidth; i+=pixSize) {
         float tFac = abs(tan(ofGetElapsedTimef() * (i + j) * 0.002));
