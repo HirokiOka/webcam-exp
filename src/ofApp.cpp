@@ -65,7 +65,6 @@ void ofApp::update(){
     }
 
     cameraFbo.begin();
-    //vidGrabber.draw(cameraFbo.getWidth(), 0, -cameraFbo.getWidth(), cameraFbo.getHeight());
     renderImg.draw(0, 0);
     cameraFbo.end();
 
@@ -112,14 +111,17 @@ void ofApp::update(){
   lastMomentum = momentum;
 
   if (eTimef > 1.0 && momDiff > moveThreshold) {
-    array<float, 5> a = {0.2, 0.4, 0.6, 0.8, 1.0};
+    array<float, 7> a = {0.2, 0.4, 0.6, 0.8, 1.0 ,1.2, 1.4};
     int idx = (int)ofRandom(0, a.size());
     if (scene == 0) {
-      se_harmo.setSpeed(a[idx]);
-      se_harmo.play();
-    } else if (scene == 1 || scene == 2) {
+      d_chord.setSpeed(a[idx]);
+      d_chord.play();
+    } else if (scene == 1) {
       se_bass.setSpeed(a[idx]);
       se_bass.play();
+    } else if (scene == 2) {
+      se_harmo.setSpeed(a[idx]);
+      se_harmo.play();
     } else if (scene == 3) {
       glitch_bass_g.setSpeed(a[idx]);
       glitch_bass_g.play();
@@ -266,7 +268,7 @@ void ofApp::setupDevices() {
       ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable";
     }
   }
-  vidGrabber.setDeviceID(1);
+  vidGrabber.setDeviceID(0);
   vidGrabber.setup(camWidth, camHeight, true);
 }
 
@@ -274,7 +276,7 @@ void ofApp::initGUI() {
     // Init GUI
     gui.setup();
     gui.add(threshold.setup("threshold", 40, 10, 255));
-    gui.add(moveThreshold.setup("move threshold", 20, 0, 100));
+    gui.add(moveThreshold.setup("move threshold", 30, 20, 100));
     gui.add(bgCol.setup("background", 0, 0, 255));
     gui.add(camId.setup("camID", 1, 0, devices.size()));
 
@@ -320,20 +322,24 @@ void ofApp::initSound() {
   bgm.load("ambient_bgm_t.wav");
   bgm.setLoop(true);
   bgm.setMultiPlay(true);
-  bgm.setVolume(0.8);
+  bgm.setVolume(1.0);
   bgm.play();
 
   se_harmo.load("b_harmo.mp3");
-  se_harmo.setVolume(1.2);
+  se_harmo.setVolume(0.6);
   se_harmo.setMultiPlay(true);
 
   se_bass.load("b_high.mp3");
-  se_bass.setVolume(2.0);
+  se_bass.setVolume(0.8);
   se_bass.setMultiPlay(true);
 
-  glitch_bass_g.load("glitch_bass_g.flac");
-  glitch_bass_g.setVolume(0.2);
+  glitch_bass_g.load("Knock.mp3");
+  glitch_bass_g.setVolume(0.8);
   glitch_bass_g.setMultiPlay(true);
+
+  d_chord.load("A_harmo.mp3");
+  d_chord.setVolume(0.6);
+  d_chord.setMultiPlay(true);
 }
 
 void ofApp::initFlowTools() {

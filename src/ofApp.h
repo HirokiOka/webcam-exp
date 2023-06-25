@@ -73,6 +73,7 @@ class ofApp : public ofBaseApp{
     ofSoundPlayer se_harmo;
     ofSoundPlayer se_bass;
     ofSoundPlayer glitch_bass_g;
+    ofSoundPlayer d_chord;
 
     //FlowToolsConfig
     ofFbo cameraFbo;
