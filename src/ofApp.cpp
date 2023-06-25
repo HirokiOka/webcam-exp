@@ -2,6 +2,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
   ofSetVerticalSync(true);
+  ofHideCursor();
 
   devices = vidGrabber.listDevices();
   for (int i = 0; i < devices.size(); i++) {
