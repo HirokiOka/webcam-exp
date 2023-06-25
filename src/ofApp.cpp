@@ -17,7 +17,7 @@ void ofApp::setup(){
   //Init GUI
   gui.setup();
   gui.add(threshold.setup("threshold", 40, 10, 255));
-  gui.add(moveThreshold.setup("move threshold", 30, 0, 100));
+  gui.add(moveThreshold.setup("move threshold", 20, 0, 100));
   gui.add(bgCol.setup("background", 0, 0, 255));
   gui.add(camId.setup("camID", 1, 0, devices.size()));
   //gui.add(showImg.setup("show image", 20, 20));
@@ -56,11 +56,11 @@ void ofApp::setup(){
   bgm.load("ambient_bgm_t.wav");
   bgm.setLoop(true);
   bgm.setMultiPlay(true);
-  bgm.setVolume(1.2);
+  bgm.setVolume(0.8);
   bgm.play();
 
   se_harmo.load("b_harmo.mp3");
-  se_harmo.setVolume(1.0);
+  se_harmo.setVolume(1.2);
   se_harmo.setMultiPlay(true);
 
   se_bass.load("b_high.mp3");
@@ -233,6 +233,24 @@ void ofApp::draw(){
 
   if (showImg) colorImg.draw(0, 0);
   if (scene == 0) {
+
+    ofPushStyle();
+    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
+    fluidFlow.draw(0, 0, camWidth, camHeight);
+    //fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
+    ofPopStyle();
+
+
+  } else if (scene == 1) {
+    ofClear(0, 0);
+    ofPushStyle();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    fluidFlow.draw(0, 0, camWidth, camHeight);
+    fluidFlow.drawPressure(0, 0, camWidth, camHeight);
+    fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
+    ofPopStyle();
+
+  } else if (scene == 2) {
     //fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
     particleSystem.updateMesh();
     ofPushStyle();
@@ -255,17 +273,7 @@ void ofApp::draw(){
     for (int i=0; i<contourCircles.size(); i++) contourCircles[i]->draw();
     ofPopMatrix();
     */
-
-  } else if (scene == 1) {
-    ofClear(0, 0);
-    ofPushStyle();
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    fluidFlow.draw(0, 0, camWidth, camHeight);
-    fluidFlow.drawPressure(0, 0, camWidth, camHeight);
-    fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
-    ofPopStyle();
-
-  } else if (scene == 2) {
+  } else if (scene == 3) {
     float cFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     ofPixels pixels = colorImg.getPixels();
     for (int j = 0; j < camHeight; j+=pixSize) {
@@ -288,12 +296,6 @@ void ofApp::draw(){
 
       }
     }
-  } else if (scene == 3) {
-    ofPushStyle();
-    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-    fluidFlow.draw(0, 0, camWidth, camHeight);
-    fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
-    ofPopStyle();
   }
   ofPopMatrix();
 

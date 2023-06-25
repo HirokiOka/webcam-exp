@@ -82,7 +82,7 @@ class ofApp : public ofBaseApp{
     int windowWidth, windowHeight, densityWidth, densityHeight, simulationWidth, simulationHeight;
     int sceneNum = 4;
     int scene = 0;
-    int dSec = 10;
+    int dSec = 30;
     int momentum = 0;
     int lastMomentum = 0;
     int momDiff = 0;
