@@ -139,25 +139,6 @@ void ofApp::draw(){
 
   if (showImg) colorImg.draw(0, 0);
   if (scene == 0) {
-
-    ofPushStyle();
-    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-    fluidFlow.draw(0, 0, camWidth, camHeight);
-    //fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
-    ofPopStyle();
-
-
-  } else if (scene == 1) {
-    ofClear(0, 0);
-    ofPushStyle();
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
-    fluidFlow.draw(0, 0, camWidth, camHeight);
-    fluidFlow.drawPressure(0, 0, camWidth, camHeight);
-    fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
-    ofPopStyle();
-
-  } else if (scene == 2) {
-    //fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
     particleSystem.updateMesh();
     ofPushStyle();
     ofEnableBlendMode(OF_BLENDMODE_SCREEN);
@@ -179,6 +160,21 @@ void ofApp::draw(){
     for (int i=0; i<contourCircles.size(); i++) contourCircles[i]->draw();
     ofPopMatrix();
     */
+
+  } else if (scene == 1) {
+    ofPushStyle();
+    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
+    fluidFlow.draw(0, 0, camWidth, camHeight);
+    ofPopStyle();
+
+  } else if (scene == 2) {
+    ofClear(0, 0);
+    ofPushStyle();
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    fluidFlow.draw(0, 0, camWidth, camHeight);
+    fluidFlow.drawPressure(0, 0, camWidth, camHeight);
+    fluidFlow.drawVelocity(0, 0, camWidth, camHeight);
+    ofPopStyle();
   } else if (scene == 3) {
     float cFac = abs(sin(ofGetElapsedTimef()) * 0.8) + 1;
     ofPixels pixels = colorImg.getPixels();
@@ -319,7 +315,7 @@ void ofApp::initParticleSystem() {
 
 void ofApp::initSound() {
   //Init sound
-  bgm.load("ambient_bgm_t.wav");
+  bgm.load("bgm_tt.wav");
   bgm.setLoop(true);
   bgm.setMultiPlay(true);
   bgm.setVolume(1.0);
