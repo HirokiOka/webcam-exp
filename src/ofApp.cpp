@@ -268,7 +268,7 @@ void ofApp::setupDevices() {
       ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable";
     }
   }
-  vidGrabber.setDeviceID(0);
+  vidGrabber.setDeviceID(1);
   vidGrabber.setup(camWidth, camHeight, true);
 }
 
