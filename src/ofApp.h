@@ -17,6 +17,14 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
+    void setupDevices();
+    void initGUI();
+    void setupVideoProcessing();
+    void initBox2d();
+    void initParticleSystem();
+    void initSound();
+    void initFlowTools();
+
 		void keyPressed(int key);
 		void mouseReleased(int x, int y, int button);
 		void windowResized(int w, int h);

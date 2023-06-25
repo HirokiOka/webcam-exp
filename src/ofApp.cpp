@@ -4,112 +4,15 @@ void ofApp::setup(){
   ofSetVerticalSync(true);
   ofHideCursor();
 
-  devices = vidGrabber.listDevices();
-  for (int i = 0; i < devices.size(); i++) {
-    if (devices[i].bAvailable) {
-      ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
-    } else {
-      ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable";
-    }
-  }
-  vidGrabber.setDeviceID(1);
-  vidGrabber.setup(camWidth, camHeight, true);
-
-  //Init GUI
-  gui.setup();
-  gui.add(threshold.setup("threshold", 40, 10, 255));
-  gui.add(moveThreshold.setup("move threshold", 20, 0, 100));
-  gui.add(bgCol.setup("background", 0, 0, 255));
-  gui.add(camId.setup("camID", 1, 0, devices.size()));
-  //gui.add(showImg.setup("show image", 20, 20));
-  //gui.add(pixSize.setup("pixSize", 14, 4, 108));
-
-  ofAddListener(gui.getParameter().castGroup().parameterChangedE(), this, &ofApp::paramChangedEvent);
-
-  //Init VideoGrabber
-  colorImg.allocate(camWidth ,camHeight);
-  grayImg.allocate(camWidth, camHeight);
-  grayBg.allocate(camWidth, camHeight);
-  grayDiff.allocate(camWidth, camHeight);
-
-  renderImg.allocate(camWidth, camHeight, OF_IMAGE_COLOR);
-  bLearnBackground = true;
-
-  //Init box2d
-  box2d.init();
-  box2d.setGravity(0, 0);
-  box2d.enableEvents();
-  box2d.createBounds(0, 0, colorImg.width, colorImg.height);
-  box2d.setFPS(30);
-  box2d.checkBounds(true);
-
-  //Init particleSystem
-  particleSystem.init(box2d.getWorld());
-  particleSystem.setMaxParticles(maxParticles);
-  particleSystem.setRadius(particleRadius);
-
-  for(int i = 0; i < maxParticles; i++) {
-    particleSystem.addParticle(int(colorImg.width / 2) + ofRandom(-200, 200), ofRandom(-50, 150));
-  }
-  particleSystem.setParticleType(12);
-
-  //Init sound
-  bgm.load("ambient_bgm_t.wav");
-  bgm.setLoop(true);
-  bgm.setMultiPlay(true);
-  bgm.setVolume(0.8);
-  bgm.play();
-
-  se_harmo.load("b_harmo.mp3");
-  se_harmo.setVolume(1.2);
-  se_harmo.setMultiPlay(true);
-
-  se_bass.load("b_high.mp3");
-  se_bass.setVolume(2.0);
-  se_bass.setMultiPlay(true);
-
-  glitch_bass_g.load("glitch_bass_g.flac");
-  glitch_bass_g.setVolume(0.2);
-  glitch_bass_g.setMultiPlay(true);
-
-  //Init flowTools
-  densityWidth = 640;
-  densityHeight = 480;
-
-  simulationWidth = densityWidth / 2;
-  simulationHeight= densityHeight / 2;
-
-  windowWidth = ofGetWindowWidth();
-  windowHeight = ofGetWindowHeight();
-
-	opticalFlow.setup(simulationWidth, simulationHeight);
-	velocityBridgeFlow.setup(simulationWidth, simulationHeight);
-	densityBridgeFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
-	temperatureBridgeFlow.setup(simulationWidth, simulationHeight);
-
-	fluidFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
-  fluidFlow.setSpeed(0.02);
-  fluidFlow.setDissipationVel(0.2);
-  fluidFlow.setDissipationDen(0.8);
-  //fluidFlow.setVorticity(0.1);
-  fluidFlow.setVorticity(1.0);
-
-	particleFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
-
-	flows.push_back(&velocityBridgeFlow);
-	flows.push_back(&densityBridgeFlow);
-	flows.push_back(&temperatureBridgeFlow);
-	flows.push_back(&fluidFlow);
-	flows.push_back(&particleFlow);
-
-  for (auto flow : flows) {
-    flow->setVisualizationFieldSize(glm::vec2(simulationWidth / 2, simulationHeight / 2));
-    flow->setVisualizationToggleScalar(true);
-  }
-
-  cameraFbo.allocate(camWidth, camHeight);
-  ftUtil::zero(cameraFbo);
+  setupDevices();
+  initGUI();
+  setupVideoProcessing();
+  initBox2d();
+  initParticleSystem();
+  initSound();
+  initFlowTools();
 }
+
 
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -301,6 +204,7 @@ void ofApp::draw(){
   ofPopMatrix();
 
   if (debugMode) {
+    ofShowCursor();
     ofDrawBitmapStringHighlight("windowWidth: " + ofToString(ofGetWidth()), 10, 20, ofColor::black, ofColor::white);
     ofDrawBitmapStringHighlight("windowHeight: " + ofToString(ofGetHeight()), 10, 40, ofColor::black, ofColor::white);
     ofDrawBitmapStringHighlight("vidWidth: " + ofToString(vidGrabber.getWidth()), 10, 60, ofColor::black, ofColor::white);
@@ -349,5 +253,122 @@ void ofApp::paramChangedEvent(ofAbstractParameter &e) {
     vidGrabber.close();
     vidGrabber.setDeviceID(camId);
     vidGrabber.initGrabber(640, 480);
+  }
+}
+
+void ofApp::setupDevices() {
+  //Setup Camera Devices
+  devices = vidGrabber.listDevices();
+  for (int i = 0; i < devices.size(); i++) {
+    if (devices[i].bAvailable) {
+      ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
+    } else {
+      ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable";
+    }
+  }
+  vidGrabber.setDeviceID(1);
+  vidGrabber.setup(camWidth, camHeight, true);
+}
+
+void ofApp::initGUI() {
+    // Init GUI
+    gui.setup();
+    gui.add(threshold.setup("threshold", 40, 10, 255));
+    gui.add(moveThreshold.setup("move threshold", 20, 0, 100));
+    gui.add(bgCol.setup("background", 0, 0, 255));
+    gui.add(camId.setup("camID", 1, 0, devices.size()));
+
+    ofAddListener(gui.getParameter().castGroup().parameterChangedE(), this, &ofApp::paramChangedEvent);
+}
+
+void ofApp::setupVideoProcessing() {
+  //Init VideoGrabber
+  colorImg.allocate(camWidth ,camHeight);
+  grayImg.allocate(camWidth, camHeight);
+  grayBg.allocate(camWidth, camHeight);
+  grayDiff.allocate(camWidth, camHeight);
+  renderImg.allocate(camWidth, camHeight, OF_IMAGE_COLOR);
+  bLearnBackground = true;
+  cameraFbo.allocate(camWidth, camHeight);
+  ftUtil::zero(cameraFbo);
+}
+
+void ofApp::initBox2d() {
+  //Init box2d
+  box2d.init();
+  box2d.setGravity(0, 0);
+  box2d.enableEvents();
+  box2d.createBounds(0, 0, colorImg.width, colorImg.height);
+  box2d.setFPS(30);
+  box2d.checkBounds(true);
+}
+
+void ofApp::initParticleSystem() {
+  //Init particleSystem
+  particleSystem.init(box2d.getWorld());
+  particleSystem.setMaxParticles(maxParticles);
+  particleSystem.setRadius(particleRadius);
+
+  for(int i = 0; i < maxParticles; i++) {
+    particleSystem.addParticle(int(colorImg.width / 2) + ofRandom(-200, 200), ofRandom(-50, 150));
+  }
+  particleSystem.setParticleType(12);
+}
+
+void ofApp::initSound() {
+  //Init sound
+  bgm.load("ambient_bgm_t.wav");
+  bgm.setLoop(true);
+  bgm.setMultiPlay(true);
+  bgm.setVolume(0.8);
+  bgm.play();
+
+  se_harmo.load("b_harmo.mp3");
+  se_harmo.setVolume(1.2);
+  se_harmo.setMultiPlay(true);
+
+  se_bass.load("b_high.mp3");
+  se_bass.setVolume(2.0);
+  se_bass.setMultiPlay(true);
+
+  glitch_bass_g.load("glitch_bass_g.flac");
+  glitch_bass_g.setVolume(0.2);
+  glitch_bass_g.setMultiPlay(true);
+}
+
+void ofApp::initFlowTools() {
+  //Init flowTools
+  densityWidth = 640;
+  densityHeight = 480;
+
+  simulationWidth = densityWidth / 2;
+  simulationHeight= densityHeight / 2;
+
+  windowWidth = ofGetWindowWidth();
+  windowHeight = ofGetWindowHeight();
+
+	opticalFlow.setup(simulationWidth, simulationHeight);
+	velocityBridgeFlow.setup(simulationWidth, simulationHeight);
+	densityBridgeFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
+	temperatureBridgeFlow.setup(simulationWidth, simulationHeight);
+
+	fluidFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
+  fluidFlow.setSpeed(0.02);
+  fluidFlow.setDissipationVel(0.2);
+  fluidFlow.setDissipationDen(0.8);
+  //fluidFlow.setVorticity(0.1);
+  fluidFlow.setVorticity(1.0);
+
+	particleFlow.setup(simulationWidth, simulationHeight, densityWidth, densityHeight);
+
+	flows.push_back(&velocityBridgeFlow);
+	flows.push_back(&densityBridgeFlow);
+	flows.push_back(&temperatureBridgeFlow);
+	flows.push_back(&fluidFlow);
+	flows.push_back(&particleFlow);
+
+  for (auto flow : flows) {
+    flow->setVisualizationFieldSize(glm::vec2(simulationWidth / 2, simulationHeight / 2));
+    flow->setVisualizationToggleScalar(true);
   }
 }
