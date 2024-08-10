@@ -5,3 +5,4 @@ config.make
 Makefile
 obj/
 bin/webcam-exp.app
+addons.make
